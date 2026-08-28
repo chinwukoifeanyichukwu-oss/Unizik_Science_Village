@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNIZIK Science Village — Digital Twin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="./css/portal.css?v=4" />
+
+  <!--
+    Import map: pins the exact Three.js version used by both the core
+    library and its addons (GLTFLoader, OrbitControls in map.html later).
+    Everything resolves from the same CDN build so there is never a
+    version mismatch between core and addons.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- 3D canvas fills the viewport; portal.js attaches the renderer here -->
+  <canvas id="portal-canvas" aria-hidden="true"></canvas>
+
+  <!-- Cinematic blackout overlay used during the entry sequence -->
+  <div id="blackout-overlay"></div>
+
+  <!-- Welcome text revealed during gate ignition -->
+  <div id="welcome-text" aria-hidden="true">
+    <span class="welcome-line welcome-line--small">Welcome to</span>
+    <span class="welcome-line welcome-line--large metallic-text">UNIZIK Science Village</span>
+  </div>
+
+  <!-- Glassmorphism entrance interface -->
+  <main id="entrance-card" class="glass-panel">
+    <p class="eyebrow">University Digital Twin</p>
+    <h1 class="title metallic-text">Science Village</h1>
+    <p class="subtitle">Interactive 3D Campus Map</p>
+    <p class="description">
+      Explore the Science Village through an immersive architectural
+      navigation experience.
+    </p>
+
+    <div class="slider-wrap">
+      <div class="slider-track" id="slider-track">
+        <div class="slider-fill" id="slider-fill"></div>
+        <span class="slider-label" id="slider-label">Slide to enter</span>
+        <button
+          id="slider-handle"
+          class="slider-handle"
+          disabled
+          aria-label="Slide to enter Science Village"
+        >
+          <span aria-hidden="true">&#8594;</span>
+        </button>
+      </div>
+    </div>
+
+    <button id="enter-button" class="enter-button-fallback" disabled aria-live="polite">
+      <span id="enter-button-label">or press Enter</span>
+    </button>
+
+    <div class="status-row">
+      <span id="status-label">Initializing system</span>
+      <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+    </div>
+
+    <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <p class="progress-percent" id="progress-percent">0%</p>
+  </main>
+
+  <!-- Error state — hidden unless scene initialization fails -->
+  <div id="error-panel" class="glass-panel error-panel" hidden>
+    <p class="eyebrow eyebrow--error">Architectural Asset Error</p>
+    <p class="description">
+      The 3D environment could not be initialized. Please check the
+      browser console for details, and confirm the page is being served
+      from a local server rather than opened directly as a file.
+    </p>
+  </div>
+
+  <script type="module" src="./js/portal.js?v=4"></script>
+</body>
+</html>
