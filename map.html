@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNIZIK Science Village — Interactive Map</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="./css/map.css?v=4" />
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <canvas id="map-canvas" aria-hidden="true"></canvas>
+
+  <!-- Follows the cursor, shows the hovered building's name -->
+  <div id="hover-tooltip" class="hover-tooltip" aria-hidden="true"></div>
+
+  <!-- ============================= HEADER ============================= -->
+  <header id="map-header" class="glass-bar">
+    <div class="header-brand">
+      <span class="brand-eyebrow">UNIZIK Science Village</span>
+      <span class="brand-title metallic-text">Digital Twin</span>
+    </div>
+
+    <div class="search-wrap">
+      <i class="search-icon" aria-hidden="true">&#8981;</i>
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search Science Village"
+        autocomplete="off"
+        aria-label="Search buildings"
+      />
+      <div id="search-results" class="search-results" hidden></div>
+    </div>
+  </header>
+
+  <!-- ============================== HUD ================================ -->
+  <div id="hud" class="hud glass-bar" aria-hidden="true">
+    <div class="hud-item">
+      <span class="hud-label">Camera</span>
+      <span class="hud-value" id="hud-camera-mode">Orbit mode</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">System</span>
+      <span class="hud-value hud-value--online">Online</span>
+    </div>
+  </div>
+
+  <!-- ============================= LEGEND =============================== -->
+  <div id="legend" class="glass-bar legend"></div>
+
+  <!-- ============================ CONTROLS ============================== -->
+  <div id="controls" class="glass-bar controls">
+    <button id="zoom-in" class="control-button" aria-label="Zoom in">+</button>
+    <button id="zoom-out" class="control-button" aria-label="Zoom out">&minus;</button>
+    <button id="reset-view" class="control-button" aria-label="Reset view">&#8982;</button>
+  </div>
+
+  <!-- ========================== INFO PANEL =============================== -->
+  <aside id="info-panel" class="glass-panel info-panel" hidden>
+    <button id="info-close" class="info-close" aria-label="Close">&times;</button>
+    <p class="eyebrow" id="info-category">Category</p>
+    <h2 class="info-title" id="info-name">Building name</h2>
+    <p class="info-description" id="info-description">Description</p>
+
+    <div class="info-meta">
+      <div>
+        <p class="info-meta-label">Category</p>
+        <p class="info-meta-value" id="info-meta-category">&ndash;</p>
+      </div>
+      <div>
+        <p class="info-meta-label">Location</p>
+        <p class="info-meta-value">Science Village</p>
+      </div>
+    </div>
+
+    <button id="view-location" class="enter-button">View location</button>
+  </aside>
+
+  <!-- =========================== ERROR PANEL ============================= -->
+  <div id="error-panel" class="glass-panel error-panel" hidden>
+    <p class="eyebrow eyebrow--error">Architectural Asset Error</p>
+    <p class="description" id="error-message">
+      The 3D environment could not be initialized. Please verify that
+      the required GLB asset exists at assets/models/map.glb.
+    </p>
+  </div>
+
+  <!-- ========================= LOADING OVERLAY ============================ -->
+  <div id="map-loading" class="map-loading">
+    <p class="eyebrow">Loading architectural assets</p>
+    <div class="progress-track">
+      <div class="progress-fill" id="map-progress-fill"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/map.js?v=4"></script>
+</body>
+</html>
