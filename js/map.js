@@ -43,7 +43,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#E8E4D9'); 
 
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10000);
+// FIX: Increased the near clipping plane from 0.1 to 5 to eliminate mobile Z-fighting
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 5, 10000);
 
 // ---------------------------------------------------------------------
 // DAYLIGHT LIGHTING
@@ -65,12 +66,11 @@ scene.add(fillLight);
 // ---------------------------------------------------------------------
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.05; // Lowered for a buttery-smooth glide
+controls.dampingFactor = 0.05; 
 controls.maxPolarAngle = Math.PI / 2 - 0.02;
 
-// --- HARDCORE TWEAKS ---
-controls.enablePan = false; // LOCKS the pivot point dead-center so the map never swings away
-controls.rotateSpeed = 0.55; // Adds heavy "weight" so the map feels massive
+controls.enablePan = false; 
+controls.rotateSpeed = 0.55; 
 
 renderer.domElement.style.touchAction = 'none';
 
@@ -89,7 +89,7 @@ const HOVER_EMISSIVE = 0.45;
 const SELECTED_EMISSIVE = 0.8;
 
 function setGhostState(mesh) {
-  if (!mesh.userData.buildingId) return; // Only gray-out mapped buildings
+  if (!mesh.userData.buildingId) return; 
   const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   materials.forEach((mat) => {
     if (!mat) return;
@@ -102,7 +102,7 @@ function setGhostState(mesh) {
 }
 
 function setFacultyGlow(mesh, intensity) {
-  if (!mesh.userData.buildingId) return; // Only glow mapped buildings
+  if (!mesh.userData.buildingId) return; 
   const facultyColor = mesh.userData.facultyColor;
   if (!facultyColor) return;
 
@@ -188,7 +188,6 @@ function sanitizeGeometryOutliers(mesh) {
   }
 }
 
-// Checks if the mesh, or any parent group it is inside, matches data.js
 function getMappedBuildingId(mesh) {
   let current = mesh;
   while (current) {
@@ -215,13 +214,10 @@ function tagInteractiveMeshes(root) {
       const buildingId = getMappedBuildingId(object);
 
       if (buildingId) {
-        // Mapped Building: Apply styles and make it interactive
         const building = buildingData[buildingId];
         object.userData.buildingId = buildingId;
         object.userData.facultyColor = new THREE.Color(categoryColors[building?.category] || '#5DCAA5');
         setGhostState(object);
-        
-        // ONLY push mapped buildings into the interactive system
         interactiveMeshes.push(object); 
       }
     }
@@ -265,7 +261,9 @@ function fitCameraToModel(root) {
   defaultTarget = new THREE.Vector3(0, size.y * 0.1, 0);
 
   camera.position.copy(defaultCameraPosition);
-  camera.near = Math.max(maxDimension / 1000, 0.1);
+  
+  // FIX: Locked near plane to 5 to prevent mobile Z-fighting
+  camera.near = 5;
   camera.far = maxDimension * 10;
   camera.updateProjectionMatrix();
 
@@ -280,13 +278,8 @@ function fitCameraToModel(root) {
   sunLight.shadow.camera.far = maxDimension * 6;
   sunLight.shadow.camera.updateProjectionMatrix();
 
-  // --- GROUND PLANE SETUP (Invisible Shadow Catcher) ---
   const groundGeometry = new THREE.PlaneGeometry(maxDimension * 2.2, maxDimension * 2.2);
-  
-  const groundMaterial = new THREE.ShadowMaterial({
-    opacity: 0.35 // Changes how dark the shadows are
-  });
-  
+  const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.35 });
   const ground = new THREE.Mesh(groundGeometry, groundMaterial);
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = (box.min.y - center.y) + 60; 
@@ -322,8 +315,13 @@ function updateTooltip(mesh, event) {
 
 function updateTooltipPosition(event) {
   if (!tooltip.classList.contains('is-visible')) return;
-  tooltip.style.left = `${event.clientX + 16}px`;
-  tooltip.style.top = `${event.clientY + 16}px`;
+  
+  // Use first touch coordinates if on mobile, otherwise mouse coordinates
+  const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+  const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+
+  tooltip.style.left = `${clientX + 16}px`;
+  tooltip.style.top = `${clientY + 16}px`;
 }
 
 renderer.domElement.addEventListener('pointerleave', () => {
@@ -360,9 +358,17 @@ renderer.domElement.addEventListener('pointermove', (event) => {
   updateTooltip(hitMesh, event);
 });
 
-renderer.domElement.addEventListener('click', () => {
-  if (hoveredMesh && hoveredMesh.userData.buildingId) {
-    selectBuilding(hoveredMesh.userData.buildingId, hoveredMesh);
+// FIX: Recalculate pointer exactly on click so mobile taps register immediately
+renderer.domElement.addEventListener('click', (event) => {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(interactiveMeshes, false);
+  const hitMesh = hits.length > 0 ? hits[0].object : null;
+
+  if (hitMesh && hitMesh.userData.buildingId) {
+    selectBuilding(hitMesh.userData.buildingId, hitMesh);
   }
 });
 
@@ -534,24 +540,17 @@ document.addEventListener('click', (event) => {
 zoomInButton.addEventListener('click', () => {
   const distance = camera.position.distanceTo(controls.target);
   const direction = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
-  
-  // Target a new position 25% closer
   const targetPos = camera.position.clone().addScaledVector(direction, distance * 0.25);
   
-  // Trigger cinematic glide
   cameraFocusTarget = { position: targetPos, lookAt: controls.target.clone() };
   hudCameraMode.textContent = 'Zooming In';
 });
 
 zoomOutButton.addEventListener('click', () => {
   const distance = camera.position.distanceTo(controls.target);
-  // Reverse direction to pull away from the target
   const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
-  
-  // Target a new position 25% further back
   const targetPos = camera.position.clone().addScaledVector(direction, distance * 0.25);
   
-  // Trigger cinematic glide
   cameraFocusTarget = { position: targetPos, lookAt: controls.target.clone() };
   hudCameraMode.textContent = 'Zooming Out';
 });
