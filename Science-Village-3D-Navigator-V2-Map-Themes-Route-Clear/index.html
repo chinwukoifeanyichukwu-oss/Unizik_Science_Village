@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Science Village 3D Navigator</title>
+<link rel="stylesheet" href="css/main.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body class="home-active">
+<div id="app">
+<header class="topbar">
+  <button id="menuBtn" class="icon-btn" aria-label="Open menu">☰</button>
+  <div class="brand"><b>SCIENCE VILLAGE</b><span>3D NAVIGATOR</span></div>
+  <div class="top-actions"><button id="themeBtn" class="tool-btn theme-btn" aria-label="Switch map theme">☾ Dark</button><button id="cleanBtn" class="tool-btn">Clean View</button><button id="resetBtn" class="tool-btn">Reset</button></div>
+</header>
+<aside id="side" class="sidebar">
+  <div class="side-title">Navigation</div>
+  <nav>
+    <button data-panel="home" class="active">⌂ <span>Home</span></button>
+    <button data-panel="map">◉ <span>3D Map</span></button>
+    <button data-panel="buildings">▦ <span>Buildings</span></button>
+    <button data-panel="directions">➜ <span>Directions</span></button>
+    <button data-panel="about">ⓘ <span>About</span></button>
+  </nav>
+  <div class="side-help"><b>Tip</b><p>Tap or click a building to inspect it. Drag to rotate, scroll to zoom and use two fingers on mobile.</p></div>
+</aside>
+<main>
+  <section id="homeScreen" class="home-screen">
+    <div class="home-grid"></div>
+    <div class="home-vignette"></div>
+    <div class="home-content">
+      <div class="home-hero">
+        <div class="home-kicker"><span class="pulse-dot"></span> Nnamdi Azikiwe University · Awka · Science Village</div>
+        <div class="home-title-row">
+          <div>
+            <p class="home-overline">INTERACTIVE SPATIAL NAVIGATION SYSTEM</p>
+            <h1>SCIENCE<br><span>VILLAGE</span></h1>
+          </div>
+          <div class="home-index">
+            <span>SV</span>
+            <b>03</b>
+            <small>3D NAVIGATOR</small>
+          </div>
+        </div>
+        <p class="home-tagline">Explore. Find. Understand. Navigate.</p>
+        <p class="home-desc">A web-based 3D navigation system for discovering facilities, understanding the spatial layout of the Science Village, and planning pedestrian routes between buildings.</p>
+        <div class="home-actions">
+          <button id="enterBtn" class="home-enter" disabled><span>Loading 3D environment…</span><b>↗</b></button>
+          <button id="homeDirectoryBtn" class="home-secondary">Browse Buildings <span>→</span></button>
+        </div>
+      </div>
+
+      <aside class="home-rail">
+        <div class="rail-head"><span>SYSTEM OVERVIEW</span><i></i></div>
+        <div class="rail-stat"><strong id="homeStatBuildings">—</strong><span>Mapped<br>buildings</span></div>
+        <div class="rail-divider"></div>
+        <div class="rail-feature"><span>01</span><div><b>Explore in 3D</b><small>Rotate, zoom and inspect the mapped environment.</small></div></div>
+        <div class="rail-feature"><span>02</span><div><b>Find a destination</b><small>Search the building directory or select directly from the map.</small></div></div>
+        <div class="rail-feature"><span>03</span><div><b>Plan a route</b><small>Generate guidance across the predefined pedestrian network.</small></div></div>
+        <div class="rail-footer"><span>DESIGNED FOR</span><b>DESKTOP · TABLET · MOBILE</b></div>
+      </aside>
+    </div>
+    <div class="home-bottom">
+      <span>OOADM-ALIGNED SYSTEM DESIGN</span>
+      <span>3D ENVIRONMENT · DIRECTORY · ROUTE GUIDANCE</span>
+      <span>© SCIENCE VILLAGE NAVIGATOR</span>
+    </div>
+  </section>
+  <div id="map" class="map"></div>
+  <div class="map-status"><span class="status-dot"></span><span id="statusText">Loading 3D environment…</span></div>
+  <div class="search-wrap">
+    <div class="search"><span>⌕</span><input id="searchInput" placeholder="Search buildings or facilities…" autocomplete="off" aria-label="Search buildings"><button id="clearSearch" aria-label="Clear search">×</button></div>
+    <div id="searchResults" class="search-results"></div>
+  </div>
+  <div class="legend"><span><i class="dot academic"></i>Academic</span><span><i class="dot lab"></i>Laboratory</span><span><i class="dot facility"></i>Facility</span></div>
+  <div class="compass" aria-label="North compass"><span>N</span><div class="needle"></div></div>
+  <section id="info" class="info hidden" aria-live="polite">
+    <button id="closeInfo" class="close" aria-label="Close">×</button>
+    <div class="photo" id="photo"><span>Building photograph</span></div>
+    <div class="eyebrow" id="infoCat"></div><h2 id="infoName"></h2><p id="infoDesc"></p><p class="loc" id="infoLoc"></p>
+    <div class="row"><button id="viewBtn" class="primary">View Location</button><button id="dirBtn" class="secondary">Get Directions</button></div>
+  </section>
+  <section id="directionsPanel" class="directions hidden">
+    <div class="panel-head"><div><div class="eyebrow">Route planner</div><h2>Get Directions</h2></div><button id="closeDirections" class="close">×</button></div>
+    <label>From<select id="fromSelect"></select></label>
+    <label>To<select id="toSelect"></select></label>
+    <div class="route-actions"><button id="routeBtn" class="primary">Show Route</button><button id="clearRouteBtn" class="secondary">Clear Route</button></div>
+    <div id="routeText" class="route-text"><p class="muted">Choose an origin and destination to calculate a route.</p></div>
+  </section>
+  <section id="directory" class="directory hidden">
+    <div class="panel-head"><div><div class="eyebrow">Science Village</div><h2>Building Directory</h2></div><button id="closeDirectory" class="close">×</button></div>
+    <div id="categoryFilters" class="filters"></div><div id="buildingList" class="building-list"></div>
+  </section>
+  <section id="about" class="about hidden">
+    <div class="panel-head"><div><div class="eyebrow">Project</div><h2>About the Navigator</h2></div><button id="closeAbout" class="close">×</button></div>
+    <p>The Science Village 3D Navigator is an interactive web-based system for exploring facilities, locating buildings and receiving route guidance within the Science Village.</p>
+    <div class="about-grid"><div><b>3D Environment</b><span>Interactive Science Village model</span></div><div><b>Search</b><span>Building and facility lookup</span></div><div><b>Navigation</b><span>Waypoint-based route guidance</span></div><div><b>Responsive</b><span>Desktop and mobile interaction</span></div></div>
+    <p class="muted">Routes are calculated from the system's predefined Science Village navigation network; this is not GPS tracking.</p>
+  </section>
+  <div class="controls"><button id="zoomIn" aria-label="Zoom in">+</button><button id="zoomOut" aria-label="Zoom out">−</button><button id="overview">Overview</button></div>
+  <div class="mobile-nav"><button data-mobile="map">◉<span>Map</span></button><button data-mobile="buildings">▦<span>Buildings</span></button><button data-mobile="directions">➜<span>Directions</span></button></div>
+  <div id="toast" class="toast"></div>
+</main>
+</div>
+<script src="data/buildings.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
